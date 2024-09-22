@@ -21,8 +21,10 @@ contract BlogReview is ERC721, ERC721URIStorage, Ownable {
     NFTData[] private _nftData;
     uint public totalReviews;
 
-    constructor() ERC721("BlogReviewCertificate", "BRC") {}
+    // Mapping to track revoked certificates
+    mapping(uint64 => bool) private _revokedCertificates;
 
+    constructor() ERC721("BlogReviewCertificate", "BRC") {}
 
     function mintCertificate(
         address owner, 
@@ -56,26 +58,58 @@ contract BlogReview is ERC721, ERC721URIStorage, Ownable {
         return uint64(uint256(keccak256(abi.encodePacked(block.timestamp, block.prevrandao, totalReviews))) % 1e8); // Ensure 8-digit number
     }
 
+    // Revoke the certificate by marking the tokenId as revoked, burning the token, and removing it from the data array
+    function revokeCertificate(uint64 tokenId) public onlyOwner {
+        require(_exists(tokenId), "Token does not exist");
+        require(!_revokedCertificates[tokenId], "Certificate already revoked");
+
+        _revokedCertificates[tokenId] = true;
+
+        // Remove certificate record from the _nftData array
+        for (uint i = 0; i < _nftData.length; i++) {
+            if (_nftData[i].tokenId == tokenId) {
+                // Replace the element to be removed with the last element
+                _nftData[i] = _nftData[_nftData.length - 1];
+                _nftData.pop(); // Remove the last element
+                break;
+            }
+        }
+
+        _burn(tokenId); // Burn the token
+    }
+
+    function isRevoked(uint64 tokenId) public view returns (bool) {
+        return _revokedCertificates[tokenId];
+    }
+
     function _beforeTokenTransfer(
     address from, 
     address to, 
     uint256 tokenId
     ) internal override virtual {
-    require(from == address(0), "Soulbound token cannot be transferred");   
-    super._beforeTokenTransfer(from, to, tokenId);  
+        // Allow minting (from == 0) and burning (to == 0) but prevent other transfers
+        if (from != address(0) && to != address(0)) {
+            require(from == address(0), "Soulbound token cannot be transferred");
+        }
+        super._beforeTokenTransfer(from, to, tokenId);
     }
+
  
     // The following functions are overrides required by Solidity.
     function _burn(uint256 tokenId) internal override(ERC721, ERC721URIStorage) {
         super._burn(tokenId);
     }
 
+    // Override tokenURI to return empty if the certificate is revoked
     function tokenURI(uint256 tokenId)
         public
         view
         override(ERC721, ERC721URIStorage)
         returns (string memory)
     {
+        if (_revokedCertificates[uint64(tokenId)]) {
+            return "This certificate has been revoked";
+        }
         return super.tokenURI(tokenId);
     }
 }
