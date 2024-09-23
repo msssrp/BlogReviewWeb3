@@ -7,6 +7,7 @@ import "@openzeppelin/contracts@4.7.0/access/Ownable.sol";
 import "@openzeppelin/contracts@4.7.0/utils/Counters.sol"; 
 
 contract BlogReview is ERC721, ERC721URIStorage, Ownable {
+    using Counters for Counters.Counter;
 
     struct NFTData {
         uint64 tokenId;
@@ -21,6 +22,9 @@ contract BlogReview is ERC721, ERC721URIStorage, Ownable {
     NFTData[] private _nftData;
     uint public totalReviews;
 
+    // Counter for unique tokenId generation
+    Counters.Counter private _tokenIdCounter;
+
     // Mapping to track revoked certificates
     mapping(uint64 => bool) private _revokedCertificates;
 
@@ -34,7 +38,10 @@ contract BlogReview is ERC721, ERC721URIStorage, Ownable {
         string memory ipfstokenURI, 
         string memory blogName
     ) public returns (uint256) {
-        uint64 tokenId = generateRandomId();
+        // Increment the counter to generate a new unique tokenId
+        _tokenIdCounter.increment();
+        uint64 tokenId = uint64(_tokenIdCounter.current());
+        
         _safeMint(owner, tokenId);
         _setTokenURI(tokenId, ipfstokenURI);
         _nftData.push(NFTData(tokenId, owner, ownerName, title, ipfsHash, blogName, block.timestamp));
@@ -52,10 +59,6 @@ contract BlogReview is ERC721, ERC721URIStorage, Ownable {
             }
         }
         revert("Certificate not found for the provided tokenId");
-    }
-
-    function generateRandomId() internal view returns (uint64) {
-        return uint64(uint256(keccak256(abi.encodePacked(block.timestamp, block.prevrandao, totalReviews))) % 1e8); // Ensure 8-digit number
     }
 
     // Revoke the certificate by marking the tokenId as revoked, burning the token, and removing it from the data array

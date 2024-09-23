@@ -769,11 +769,11 @@
 			]
 		},
 		"contracts/BlogReview.sol": {
-			"keccak256": "0xdeb8352e71970d55027dbb52b25bf09c1f72456ec1669f6a8e4cf6e350006f2a",
+			"keccak256": "0x83bf4f6096d2f3ec2458edd88968acd8eaa1e091ccd699f67f551131f6cf0f47",
 			"license": "UNLICENSED",
 			"urls": [
-				"bzz-raw://08a41a001ef7990c9b52f62a41418d94066b819ace4b12594a9d6bec8d76c1ac",
-				"dweb:/ipfs/QmPBsQ6CqE5HN8riWo8CCwSfrhFfWVPAuAN31cMz7gSFex"
+				"bzz-raw://fabf783ceb6541d995b884b8e9dfd65465b10af1b5fea91a5c194c1cf8d29e3d",
+				"dweb:/ipfs/Qma6Ehp8GDsYGuDBWpNiVRQxgj5oqKRGLRsjgKekmKbowZ"
 			]
 		}
 	},
